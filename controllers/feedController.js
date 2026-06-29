@@ -8,25 +8,29 @@ export const getPublicQuestions = catchAsync(async (req, res, next) => {
   const pageNum = parseInt(page, 10) || 1;
   const limitNum = parseInt(limit, 10) || 20;
 
+  const tagStr = typeof tag === "string" ? tag : undefined;
+  const qStr = typeof q === "string" ? q : undefined;
+  const cursorStr = typeof cursor === "string" ? cursor : undefined;
+
   // Base filter: only answered public questions
   const query = { status: "answered", visibility: "public" };
 
   // If a cursor is provided for pagination, select items older than the cursor
-  if (cursor) {
-    query._id = { $lt: cursor };
+  if (cursorStr) {
+    query._id = { $lt: cursorStr };
   }
 
   // If a search query is provided, search inside body or answer
-  if (q) {
+  if (qStr) {
     query.$or = [
-      { body: { $regex: q, $options: 'i' } },
-      { answer: { $regex: q, $options: 'i' } }
+      { body: { $regex: qStr, $options: 'i' } },
+      { answer: { $regex: qStr, $options: 'i' } }
     ];
   }
 
   // If a tag is provided, first find all users who have that tag
-  if (tag) {
-    const usersWithTag = await User.find({ tags: tag }).select("_id");
+  if (tagStr) {
+    const usersWithTag = await User.find({ tags: tagStr }).select("_id");
     // Extract just the _id values into an array
     const userIds = usersWithTag.map((u) => u._id);
     // Add recipient filter to only include questions from those users
@@ -41,7 +45,7 @@ export const getPublicQuestions = catchAsync(async (req, res, next) => {
     .populate("recipient", "username displayName avatarUrl tags"); // safe projection
 
   // Only use skip if doing traditional offset pagination (no cursor)
-  if (!cursor && page) {
+  if (!cursorStr && page) {
     dataQuery.skip((pageNum - 1) * limitNum);
   }
 

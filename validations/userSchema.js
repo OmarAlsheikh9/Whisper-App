@@ -77,3 +77,16 @@ tags: z.array(
 .refine(data => Object.keys(data).length > 0, {
   message: "At least one field must be provided for update"
 });
+
+export const ForgotPasswordSchema = z.object({
+  email: z.string().email("Invalid email format").transform(val => val.toLowerCase())
+});
+
+export const ResetPasswordSchema = z.object({
+  token: z.string().min(1, "Token is required"),
+  password: z.string().min(8, "Password must be at least 8 characters long")
+});
+
+export const RefreshTokenSchema = z.object({
+  refreshToken: z.string().min(1, "Refresh token is required")
+});
