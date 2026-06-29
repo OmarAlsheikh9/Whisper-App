@@ -92,6 +92,14 @@ npm start
 
 The server will start at `http://localhost:3000`
 
+### Seed Database
+
+Populate your database with sample users and pre-answered questions:
+
+```bash
+npm run seed
+```
+
 ### Run Tests
 
 ```bash
@@ -99,6 +107,19 @@ npm run test:api
 ```
 
 > ✅ **53 tests** across 10 test suites — all passing
+
+---
+
+## ☁️ Deployment (e.g., Railway)
+
+When deploying to platforms like **Railway**:
+
+1. **Variables**: Configure the following environment variables in your deployment dashboard:
+   - `MONGODB_URI`: Set to your production MongoDB Atlas cluster string or Mongoose plugin.
+   - `JWT_SECRET`: A strong random string.
+   - `JWT_EXPIRES_IN`: token duration (e.g., `15m` or `7d`).
+2. **MongoDB Atlas IP Whitelisting**: If using MongoDB Atlas, make sure to navigate to **Network Access** in the Atlas dashboard and add `0.0.0.0/0` (Allow Access from Anywhere) so your containerised app can reach the database.
+3. **PORT**: Railway automatically binds to `process.env.PORT`. Make sure your code uses `process.env.PORT` (already handled in our `server.js`).
 
 ---
 
