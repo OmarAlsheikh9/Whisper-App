@@ -2,6 +2,7 @@ import catchAsync from "../utils/catchAsync.js";
 import AppError from "../utils/appError.js";
 import Question from "../models/questionModel.js";
 import mongoose from "mongoose";
+import xss from "xss";
 
 export const getInbox = catchAsync(async (req, res, next) => {
   const userId = req.user._id;
@@ -50,7 +51,7 @@ export const answerQuestion = catchAsync(async (req, res, next) => {
 
   const { answer, visibility } = req.body;
   if (answer) {
-    question.answer = answer;
+    question.answer = xss(answer);
     question.answeredAt = new Date();
     question.status = "answered";
   }
@@ -80,7 +81,7 @@ export const updateQuestion = catchAsync(async (req, res, next) => {
 
   const { answer, status, visibility } = req.body;
   if (answer) {
-    question.answer = answer;
+    question.answer = xss(answer);
     question.answeredAt = new Date();
     question.status = "answered";
   }
@@ -113,5 +114,30 @@ export const deleteQuestion = catchAsync(async (req, res, next) => {
 
   await Question.deleteOne({ _id: questionId });
   res.status(204).end();
+});
+
+export const likeQuestion = catchAsync(async (req, res, next) => {
+  const questionId = req.params.id;
+
+  if (!mongoose.Types.ObjectId.isValid(questionId)) {
+    return next(new AppError("Invalid id", 400));
+  }
+
+  // Find the question and verify it is answered and public
+  const question = await Question.findOne({
+    _id: questionId,
+    status: "answered",
+    visibility: "public"
+  });
+
+  if (!question) {
+    return next(new AppError("Answered public question not found", 404));
+  }
+
+  // Atomically increment likes count
+  question.likes += 1;
+  await question.save();
+
+  res.status(200).json(question);
 });
 

@@ -2,6 +2,8 @@ import catchAsync from "../utils/catchAsync.js";
 import AppError from "../utils/appError.js";
 import User from "../models/userModel.js";
 import Question  from "../models/questionModel.js";
+import xss from "xss";
+
 export const getProfile = catchAsync(async (req, res, next) => {
   const { username } = req.params;
   let user = await User.findOne({ username: username }).select("-email");
@@ -10,7 +12,13 @@ export const getProfile = catchAsync(async (req, res, next) => {
 });
 export const updateMe = catchAsync(async (req, res, next) => {
   const user = req.user;
-  user.set(req.body);
+  
+  // Sanitize profile details to prevent XSS
+  const updates = { ...req.body };
+  if (updates.displayName) updates.displayName = xss(updates.displayName);
+  if (updates.bio) updates.bio = xss(updates.bio);
+  
+  user.set(updates);
   const updatedUser = await user.save();
   res.status(200).json(updatedUser );
 });
@@ -23,8 +31,19 @@ export const sendQuestion = catchAsync(async (req, res, next) => {
   let newQuestion = await Question.create({
     askedBy: req.user?._id ?? null,
     recipient: user._id,
-    body:body
+    body: xss(body)
   });
+
+  // Emit real-time notification to the recipient user's socket room
+  const io = req.app.get("io");
+  if (io) {
+    io.to(`room_${user._id.toString()}`).emit("new_question", {
+      id: newQuestion._id.toString(),
+      body: newQuestion.body,
+      createdAt: newQuestion.createdAt
+    });
+  }
+
   let questionObj = newQuestion.toObject();
 delete questionObj.recipient;
 delete questionObj.askedBy;

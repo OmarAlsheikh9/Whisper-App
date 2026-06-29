@@ -53,6 +53,18 @@ const UserSchema = new mongoose.Schema({
       },
       message: "Tags must be 0-10 items, each 2-20 lowercase alphanumeric characters or hyphens."
     }
+  },
+  passwordResetToken: {
+    type: String,
+    default: null
+  },
+  passwordResetExpires: {
+    type: Date,
+    default: null
+  },
+  refreshToken: {
+    type: String,
+    default: null
   }
 }, { timestamps: true });
 
@@ -63,6 +75,9 @@ UserSchema.set('toJSON', {
     delete ret._id;
     delete ret.__v;
     delete ret.password; // or passwordHash if you rename the field
+    delete ret.passwordResetToken;
+    delete ret.passwordResetExpires;
+    delete ret.refreshToken;
     return ret;
   }
 });

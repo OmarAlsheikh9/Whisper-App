@@ -40,6 +40,10 @@ const QuestionSchema = new mongoose.Schema({
   answeredAt: {
     type: Date,
     default: null
+  },
+  likes: {
+    type: Number,
+    default: 0
   }
 }, { timestamps: true });
 
@@ -51,6 +55,9 @@ QuestionSchema.set('toJSON', {
     return ret;
   }
 });
+
+// Add text index for keyword search on body and answer
+QuestionSchema.index({ body: 'text', answer: 'text' });
 
 const Question = mongoose.model('Question', QuestionSchema);
 export default Question;

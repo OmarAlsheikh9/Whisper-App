@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test:api": "node tester/run.js"
+    "test:api": "node tester/run.js",
+    "seed": "node seed.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -18,6 +19,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.8.0",
     "morgan": "^1.10.0",
+    "socket.io": "^4.8.3",
+    "xss": "^1.0.15",
     "zod": "^3.23.8"
   },
   "engines": {
